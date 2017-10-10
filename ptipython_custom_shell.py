@@ -14,8 +14,9 @@ The example in this file
 
 """
 
+
 # Define this a function with this name and signature at the module level.
-def pudb_shell(_globals, _locals):
+def pudb_shell(_globals, _locals) -> None:
     """
     This example shell runs a classic Python shell. It is based on
     run_classic_shell in pudb.shell.
@@ -27,23 +28,15 @@ def pudb_shell(_globals, _locals):
     # single dictionary. It does this in such a way that assignments propogate
     # to _locals, so that when the debugger is at the module level, variables
     # can be reassigned in the shell.
-    from pudb.shell import SetPropagatingDict
-    ns = SetPropagatingDict([_locals, _globals], _locals)
+    import os.path
+    from ptpython.ipython import embed
+    from ptpython.repl import run_config
 
-    try:
-        import readline
-        import rlcompleter
-        HAVE_READLINE = True
-    except ImportError:
-        HAVE_READLINE = False
+    history_filename = os.path.expanduser('~/.config/ptpython/history')
 
-    if HAVE_READLINE:
-        readline.set_completer(
-                rlcompleter.Completer(ns).complete)
-        readline.parse_and_bind("tab: complete")
-        readline.clear_history()
-
-    from code import InteractiveConsole
-    cons = InteractiveConsole(ns)
-    cons.interact("Press Ctrl-D to return to the debugger")
-    # When the function returns, control will be returned to the debugger.
+    embed(
+        globals=_globals,
+        locals=_locals,
+        history_filename=history_filename,
+        configure=run_config,
+    )
