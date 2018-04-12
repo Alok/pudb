@@ -3,6 +3,22 @@
 
 from __future__ import absolute_import, division, print_function
 
+import bdb
+import gc
+import os
+import sys
+from functools import partial
+from types import TracebackType
+
+import urwid
+from pudb.lowlevel import decode_lines
+from pudb.py3compat import PY3, execfile, raw_input
+from pudb.settings import load_config, save_config
+from pudb.ui_tools import (BreakpointFrame, SelectableText, SignalWrap,
+                           StackFrame, labelled_value, make_hotkey_markup)
+from pudb.var_view import FrameVarInfoKeeper
+from urwid.raw_display import Screen as RawScreen
+
 __copyright__ = """
 Copyright (C) 2009-2017 Andreas Kloeckner
 Copyright (C) 2014-2017 Aaron Meurer
@@ -27,18 +43,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
-
-import urwid
-import bdb
-import gc
-import os
-import sys
-from functools import partial
-from types import TracebackType
-
-from pudb.lowlevel import decode_lines
-from pudb.settings import load_config, save_config
-from pudb.py3compat import PY3, raw_input, execfile
 
 CONFIG = load_config()
 save_config(CONFIG)
@@ -159,11 +163,18 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 class Debugger(bdb.Bdb):
     def __init__(
-            self, stdin=None, stdout=None, term_size=None, steal_output=False,
+            self,
+            stdin=None,
+            stdout=None,
+            term_size=None,
+            steal_output=False,
     ):
         bdb.Bdb.__init__(self)
         self.ui = DebuggerUI(
-            self, stdin=stdin, stdout=stdout, term_size=term_size
+            self,
+            stdin=stdin,
+            stdout=stdout,
+            term_size=term_size,
         )
         self.steal_output = steal_output
 
@@ -474,11 +485,6 @@ class Debugger(bdb.Bdb):
 
 # UI stuff --------------------------------------------------------------------
 
-from pudb.ui_tools import make_hotkey_markup, labelled_value, \
-        SelectableText, SignalWrap, StackFrame, BreakpointFrame
-
-from pudb.var_view import FrameVarInfoKeeper
-
 # {{{ display setup
 
 try:
@@ -486,7 +492,6 @@ try:
 except ImportError:
     curses = None
 
-from urwid.raw_display import Screen as RawScreen
 try:
     from urwid.curses_display import Screen as CursesScreen
 except ImportError:
