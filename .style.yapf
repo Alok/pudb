@@ -1,0 +1,20 @@
+[style]
+align_closing_bracket_with_visual_indent = true
+# Put braces on their own line.
+dedent_closing_brackets = true
+split_before_closing_bracket = true
+indent_width = 4
+coalesce_brackets = false
+allow_multiline_lambdas = true
+join_multiple_lines = false
+spaces_around_power_operator = false
+
+column_limit = 80
+allow_multiline_dictionary_keys = false
+spaces_before_comment = 2
+split_complex_comprehension = true
+split_arguments_when_comma_terminated = true
+split_before_bitwise_operator = true
+use_tabs = False
+split_before_first_argument=true
+join_multiple_lines = false
