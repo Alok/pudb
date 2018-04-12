@@ -16,5 +16,4 @@ split_complex_comprehension = true
 split_arguments_when_comma_terminated = true
 split_before_bitwise_operator = true
 use_tabs = False
-split_before_first_argument=true
-join_multiple_lines = false
+split_before_first_argument = true
