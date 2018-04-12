@@ -1,5 +1,4 @@
-"""
-This file shows how you can define a custom shell for PuDB. This is the
+"""This file shows how you can define a custom shell for PuDB. This is the
 shell used when pressing the ! key in the debugger (it does not affect the
 Ctrl-x shell that is built into PuDB).
 
@@ -11,15 +10,14 @@ Then, go to the PuDB preferences window (type Ctrl-p inside of PuDB) and add
 the path to the file in the "Custom" field under the "Shell" heading.
 
 The example in this file
-
 """
+
 
 # Define this a function with this name and signature at the module level.
 def pudb_shell(_globals, _locals):
-    """
-    This example shell runs a classic Python shell. It is based on
-    run_classic_shell in pudb.shell.
+    """This example shell runs a classic Python shell.
 
+    It is based on run_classic_shell in pudb.shell.
     """
     # Many shells only let you pass in a single locals dictionary, rather than
     # separate globals and locals dictionaries. In this case, you can use
@@ -38,12 +36,11 @@ def pudb_shell(_globals, _locals):
         HAVE_READLINE = False
 
     if HAVE_READLINE:
-        readline.set_completer(
-                rlcompleter.Completer(ns).complete)
-        readline.parse_and_bind("tab: complete")
+        readline.set_completer(rlcompleter.Completer(ns).complete)
+        readline.parse_and_bind('tab: complete')
         readline.clear_history()
 
     from code import InteractiveConsole
     cons = InteractiveConsole(ns)
-    cons.interact("Press Ctrl-D to return to the debugger")
+    cons.interact('Press Ctrl-D to return to the debugger')
     # When the function returns, control will be returned to the debugger.

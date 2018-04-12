@@ -25,7 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     from pudb.run import main
     main()

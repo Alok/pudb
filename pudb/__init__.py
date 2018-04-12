@@ -1,5 +1,10 @@
 from __future__ import absolute_import, division, print_function
 
+import signal  # noqa
+
+from pudb.py3compat import PY3, raw_input
+from pudb.settings import load_config, save_config
+
 __copyright__ = """
 Copyright (C) 2009-2017 Andreas Kloeckner
 Copyright (C) 2014-2017 Aaron Meurer
@@ -25,14 +30,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-
 NUM_VERSION = (2017, 1, 4)
-VERSION = ".".join(str(nv) for nv in NUM_VERSION)
+VERSION = '.'.join(str(nv) for nv in NUM_VERSION)
 __version__ = VERSION
 
-from pudb.py3compat import raw_input, PY3
-
-from pudb.settings import load_config, save_config
 CONFIG = load_config()
 save_config(CONFIG)
 
@@ -61,11 +62,10 @@ class PudbShortcuts(object):
 
 if PY3:
     import builtins
-    builtins.__dict__["pu"] = PudbShortcuts()
+    builtins.__dict__['pu'] = PudbShortcuts()
 else:
     import __builtin__
-    __builtin__.__dict__["pu"] = PudbShortcuts()
-
+    __builtin__.__dict__['pu'] = PudbShortcuts()
 
 CURRENT_DEBUGGER = []
 
@@ -81,12 +81,11 @@ def _get_debugger(**kwargs):
         return CURRENT_DEBUGGER[0]
 
 
-import signal  # noqa
 DEFAULT_SIGNAL = signal.SIGINT
 del signal
 
 
-def runscript(mainpyfile, args=None, pre_run="", steal_output=False):
+def runscript(mainpyfile, args=None, pre_run='', steal_output=False):
     dbg = _get_debugger(steal_output=steal_output)
 
     # Note on saving/restoring sys.argv: it's a good idea when sys.argv was
@@ -110,59 +109,65 @@ def runscript(mainpyfile, args=None, pre_run="", steal_output=False):
             from subprocess import call
             retcode = call(pre_run, close_fds=True, shell=True)
             if retcode:
-                print("*** WARNING: pre-run process exited with code %d." % retcode)
-                raw_input("[Hit Enter]")
+                print(
+                    '*** WARNING: pre-run process exited with code %d.' %
+                    retcode
+                )
+                raw_input('[Hit Enter]')
 
-        status_msg = ""
+        status_msg = ''
 
         try:
             dbg._runscript(mainpyfile)
         except SystemExit:
             se = sys.exc_info()[1]
-            status_msg = "The debuggee exited normally with " \
-                    "status code %s.\n\n" % se.code
+            status_msg = 'The debuggee exited normally with ' \
+                    'status code %s.\n\n' % se.code
         except Exception:
             dbg.post_mortem = True
             dbg.interaction(None, sys.exc_info())
 
         while True:
             import urwid
-            pre_run_edit = urwid.Edit("", pre_run)
+            pre_run_edit = urwid.Edit('', pre_run)
 
-            if not CONFIG["prompt_on_quit"]:
+            if not CONFIG['prompt_on_quit']:
                 return
 
-            result = dbg.ui.call_with_ui(dbg.ui.dialog,
-                urwid.ListBox(urwid.SimpleListWalker([urwid.Text(
-                    "Your PuDB session has ended.\n\n%s"
-                    "Would you like to quit PuDB or restart your program?\n"
-                    "You may hit 'q' to quit."
-                    % status_msg),
-                    urwid.Text("\n\nIf you decide to restart, this command "
-                    "will be run prior to actually restarting:"),
-                    urwid.AttrMap(pre_run_edit, "value")
-                    ])),
-                [
-                    ("Restart", "restart"),
-                    ("Examine", "examine"),
-                    ("Quit", "quit"),
-                    ],
+            result = dbg.ui.call_with_ui(
+                dbg.ui.dialog,
+                urwid.ListBox(
+                    urwid.SimpleListWalker([
+                        urwid.Text(
+                            'Your PuDB session has ended.\n\n%s'
+                            'Would you like to quit PuDB or restart your program?\n'
+                            "You may hit 'q' to quit." % status_msg
+                        ),
+                        urwid.Text(
+                            '\n\nIf you decide to restart, this command '
+                            'will be run prior to actually restarting:'
+                        ),
+                        urwid.AttrMap(pre_run_edit, 'value')
+                    ])
+                ), [
+                    ('Restart', 'restart'),
+                    ('Examine', 'examine'),
+                    ('Quit', 'quit'),
+                ],
                 focus_buttons=True,
                 bind_enter_esc=False,
-                title="Finished",
-                extra_bindings=[
-                    ("q", "quit"),
-                    ("esc", "examine"),
-                    ])
+                title='Finished',
+                extra_bindings=[('q', 'quit'), ('esc', 'examine')]
+            )
 
-            if result == "quit":
+            if result == 'quit':
                 return
 
-            if result == "examine":
+            if result == 'examine':
                 dbg.post_mortem = True
                 dbg.interaction(None, sys.exc_info(), show_exc_dialog=False)
 
-            if result == "restart":
+            if result == 'restart':
                 break
 
         pre_run = pre_run_edit.get_edit_text()
@@ -188,11 +193,10 @@ def runcall(*args, **kwds):
 
 
 def set_trace(paused=True):
-    """
-    Start the debugger
+    """Start the debugger.
 
-    If paused=False (the default is True), the debugger will not stop here
-    (same as immediately pressing 'c' to continue).
+    If paused=False (the default is True), the debugger will not stop
+    here (same as immediately pressing 'c' to continue).
     """
     import sys
     dbg = _get_debugger()
@@ -213,8 +217,7 @@ def _interrupt_handler(signum, frame):
 
 
 def set_interrupt_handler(interrupt_signal=DEFAULT_SIGNAL):
-    """
-    Set up an interrupt handler, to activate PuDB when Python receives the
+    """Set up an interrupt handler, to activate PuDB when Python receives the
     signal `interrupt_signal`.  By default it is SIGINT (i.e., Ctrl-c).
 
     To use a different signal, pass it as the argument to this function, like
@@ -243,16 +246,20 @@ def set_interrupt_handler(interrupt_signal=DEFAULT_SIGNAL):
         if old_handler is None:
             # This is the documented meaning of getsignal()->None.
             old_handler = 'not installed from python'
-        return warn("A non-default handler for signal %d is already installed (%s). "
-                "Skipping pudb interrupt support."
-                % (interrupt_signal, old_handler))
+        return warn(
+            'A non-default handler for signal %d is already installed (%s). '
+            'Skipping pudb interrupt support.' %
+            (interrupt_signal, old_handler)
+        )
 
     import threading
     if not isinstance(threading.current_thread(), threading._MainThread):
         from warnings import warn
         # Setting signals from a non-main thread will not work
-        return warn("Setting the interrupt handler can only be done on the main "
-                "thread. The interrupt handler was NOT installed.")
+        return warn(
+            'Setting the interrupt handler can only be done on the main '
+            'thread. The interrupt handler was NOT installed.'
+        )
 
     try:
         signal.signal(interrupt_signal, _interrupt_handler)
@@ -260,8 +267,10 @@ def set_interrupt_handler(interrupt_signal=DEFAULT_SIGNAL):
         from pudb.lowlevel import format_exception
         import sys
         from warnings import warn
-        warn("setting interrupt handler on signal %d failed: %s"
-                % (interrupt_signal, "".join(format_exception(sys.exc_info()))))
+        warn(
+            'setting interrupt handler on signal %d failed: %s' %
+            (interrupt_signal, ''.join(format_exception(sys.exc_info())))
+        )
 
 
 def post_mortem(tb=None, e_type=None, e_value=None):
@@ -292,7 +301,7 @@ def pm():
     post_mortem(tb, e_type, e_value)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     print("You now need to type 'python -m pudb.run'. Sorry.")
 
 # vim: foldmethod=marker:expandtab:softtabstop=4

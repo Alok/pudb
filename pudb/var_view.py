@@ -27,7 +27,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-
 # {{{ constants and imports
 
 import urwid
@@ -47,10 +46,11 @@ else:
 
 from pudb.debugger import CONFIG
 from pudb.ui_tools import text_width
+
 # }}}
 
-
 # {{{ data
+
 
 class FrameVarInfo(object):
     def __init__(self):
@@ -59,22 +59,20 @@ class FrameVarInfo(object):
 
     def get_inspect_info(self, id_path, read_only):
         if read_only:
-            return self.id_path_to_iinfo.get(
-                    id_path, InspectInfo())
+            return self.id_path_to_iinfo.get(id_path, InspectInfo())
         else:
-            return self.id_path_to_iinfo.setdefault(
-                    id_path, InspectInfo())
+            return self.id_path_to_iinfo.setdefault(id_path, InspectInfo())
 
 
 class InspectInfo(object):
     def __init__(self):
         self.show_detail = False
-        self.display_type = CONFIG["stringifier"]
+        self.display_type = CONFIG['stringifier']
         self.highlighted = False
         self.repeated_at_top = False
-        self.access_level = "public"
+        self.access_level = 'public'
         self.show_methods = False
-        self.wrap = CONFIG["wrap_variables"]
+        self.wrap = CONFIG['wrap_variables']
 
 
 class WatchExpression(object):
@@ -84,42 +82,53 @@ class WatchExpression(object):
 
 class WatchEvalError(object):
     def __str__(self):
-        return "<error>"
+        return '<error>'
+
 
 # }}}
 
-
 # {{{ safe types
+
 
 def get_str_safe_types():
     import types
 
-    return tuple(getattr(types, s) for s in
-        "BuiltinFunctionType BuiltinMethodType  ClassType "
-        "CodeType FileType FrameType FunctionType GetSetDescriptorType "
-        "LambdaType MemberDescriptorType MethodType ModuleType "
-        "SliceType TypeType TracebackType UnboundMethodType XRangeType".split()
-        if hasattr(types, s)) + (WatchEvalError,)
+    return tuple(
+        getattr(types, s)
+        for s in 'BuiltinFunctionType BuiltinMethodType  ClassType '
+        'CodeType FileType FrameType FunctionType GetSetDescriptorType '
+        'LambdaType MemberDescriptorType MethodType ModuleType '
+        'SliceType TypeType TracebackType UnboundMethodType XRangeType'.split()
+        if hasattr(types, s)
+    ) + (WatchEvalError, )
 
 
 STR_SAFE_TYPES = get_str_safe_types()
 
 # }}}
 
-
 # {{{ widget
 
+
 class VariableWidget(urwid.FlowWidget):
-    def __init__(self, prefix, var_label, value_str, id_path=None, attr_prefix=None,
-            watch_expr=None, iinfo=None):
+    def __init__(
+            self,
+            prefix,
+            var_label,
+            value_str,
+            id_path=None,
+            attr_prefix=None,
+            watch_expr=None,
+            iinfo=None
+    ):
         self.prefix = prefix
         self.var_label = var_label
         self.value_str = value_str
         self.id_path = id_path
-        self.attr_prefix = attr_prefix or "var"
+        self.attr_prefix = attr_prefix or 'var'
         self.watch_expr = watch_expr
         if iinfo is None:
-            self.wrap = CONFIG["wrap_variables"]
+            self.wrap = CONFIG['wrap_variables']
         else:
             self.wrap = iinfo.wrap
 
@@ -132,23 +141,25 @@ class VariableWidget(urwid.FlowWidget):
         maxcol = size[0] - len(self.prefix)  # self.prefix is a padding
         var_label = self.var_label or ''
         value_str = self.value_str or ''
-        alltext = var_label + ": " + value_str
+        alltext = var_label + ': ' + value_str
         # The first line is not indented
         firstline = self.prefix + alltext[:maxcol]
         if not alltext[maxcol:]:
             return [firstline]
         fulllines, rest = divmod(text_width(alltext) - maxcol, maxcol - 2)
-        restlines = [alltext[(maxcol - 2)*i + maxcol:(maxcol - 2)*i + 2*maxcol - 2]
-            for i in xrange(fulllines + bool(rest))]
-        return [firstline] + ["  " + self.prefix + i for i in restlines]
+        restlines = [
+            alltext[(maxcol - 2) * i + maxcol:(maxcol - 2) * i + 2 * maxcol - 2]
+            for i in xrange(fulllines + bool(rest))
+        ]
+        return [firstline] + ['  ' + self.prefix + i for i in restlines]
 
     def rows(self, size, focus=False):
         if self.wrap:
             return len(self._get_text(size))
 
-        if (self.value_str is not None
-                and self.var_label is not None
-                and len(self.prefix) + text_width(self.var_label) > self.SIZE_LIMIT):
+        if (self.value_str is not None and self.var_label is not None
+                and len(self.prefix) + text_width(self.var_label) >
+                self.SIZE_LIMIT):
             return 2
         else:
             return 1
@@ -158,65 +169,81 @@ class VariableWidget(urwid.FlowWidget):
 
         maxcol = size[0]
         if focus:
-            apfx = "focused "+self.attr_prefix+" "
+            apfx = 'focused ' + self.attr_prefix + ' '
         else:
-            apfx = self.attr_prefix+" "
+            apfx = self.attr_prefix + ' '
 
         var_label = self.var_label or ''
 
         if self.wrap:
             text = self._get_text(size)
 
-            extralabel_full, extralabel_rem = divmod(text_width(var_label[maxcol:]), maxcol)
+            extralabel_full, extralabel_rem = divmod(
+                text_width(var_label[maxcol:]), maxcol
+            )
             totallen = sum([text_width(i) for i in text])
             labellen = (
-                    len(self.prefix)  # Padding of first line
+                len(self.prefix)  # Padding of first line
+                + (len(self.prefix) + 2)  # Padding of subsequent lines
+                * (extralabel_full + bool(extralabel_rem)) +
+                text_width(var_label) + 2  # for ": "
+            )
 
-                    + (len(self.prefix) + 2)  # Padding of subsequent lines
-                    * (extralabel_full + bool(extralabel_rem))
-
-                    + text_width(var_label)
-
-                    + 2  # for ": "
-                    )
-
-            _attr = [(apfx+"label", labellen), (apfx+"value", totallen - labellen)]
+            _attr = [(apfx + 'label', labellen),
+                     (apfx + 'value', totallen - labellen)]
             from urwid.util import rle_subseg
 
             fullcols, rem = divmod(totallen, maxcol)
 
-            attr = [rle_subseg(_attr, i*maxcol, (i + 1)*maxcol)
-                for i in xrange(fullcols + bool(rem))]
+            attr = [
+                rle_subseg(_attr, i * maxcol, (i + 1) * maxcol)
+                for i in xrange(fullcols + bool(rem))
+            ]
 
-            return make_canvas(text, attr, maxcol, apfx+"value")
+            return make_canvas(text, attr, maxcol, apfx + 'value')
 
         if self.value_str is not None:
             if self.var_label is not None:
-                if len(self.prefix) + text_width(self.var_label) > self.SIZE_LIMIT:
+                if len(self.prefix) + text_width(self.var_label
+                                                 ) > self.SIZE_LIMIT:
                     # label too long? generate separate value line
-                    text = [self.prefix + self.var_label,
-                            self.prefix+"  " + self.value_str]
+                    text = [
+                        self.prefix + self.var_label,
+                        self.prefix + '  ' + self.value_str
+                    ]
 
-                    attr = [[(apfx+"label", len(self.prefix)+text_width(self.var_label))],
-                            [(apfx+"value", len(self.prefix)+2+text_width(self.value_str))]]
+                    attr = [[(
+                        apfx + 'label',
+                        len(self.prefix) + text_width(self.var_label)
+                    )], [(
+                        apfx + 'value',
+                        len(self.prefix) + 2 + text_width(self.value_str)
+                    )]]
                 else:
-                    text = [self.prefix + self.var_label + ": " + self.value_str]
+                    text = [
+                        self.prefix + self.var_label + ': ' + self.value_str
+                    ]
 
                     attr = [[
-                            (apfx+"label", len(self.prefix)+text_width(self.var_label)+2),
-                            (apfx+"value", text_width(self.value_str)),
-                            ]]
+                        (
+                            apfx + 'label',
+                            len(self.prefix) + text_width(self.var_label) + 2
+                        ),
+                        (apfx + 'value', text_width(self.value_str)),
+                    ]]
             else:
                 text = [self.prefix + self.value_str]
 
                 attr = [[
-                        (apfx+"label", len(self.prefix)),
-                        (apfx+"value", text_width(self.value_str)),
-                        ]]
+                    (apfx + 'label', len(self.prefix)),
+                    (apfx + 'value', text_width(self.value_str)),
+                ]]
         else:
             text = [self.prefix + self.var_label]
 
-            attr = [[(apfx+"label", len(self.prefix) + text_width(self.var_label)), ]]
+            attr = [[
+                (apfx + 'label', len(self.prefix) + text_width(self.var_label)),
+            ]]
 
         # Ellipses to show text was cut off
         #encoding = urwid.util.detected_encoding
@@ -225,8 +252,10 @@ class VariableWidget(urwid.FlowWidget):
             # Unicode is supported, use single character ellipsis
             for i in xrange(len(text)):
                 if len(text[i]) > maxcol:
-                    text[i] = (unicode(text[i][:maxcol-1])  # noqa: F821
-                            + ELLIPSIS + unicode(text[i][maxcol:]))  # noqa: F821
+                    text[i] = (
+                        unicode(text[i][:maxcol - 1])  # noqa: F821
+                        + ELLIPSIS + unicode(text[i][maxcol:])
+                    )  # noqa: F821
                     # XXX: This doesn't work.  It just gives a ?
                     # Strangely, the following does work (it gives the …
                     # three characters from the right):
@@ -236,22 +265,22 @@ class VariableWidget(urwid.FlowWidget):
         else:
             for i in xrange(len(text)):
                 if text_width(text[i]) > maxcol:
-                    text[i] = text[i][:maxcol-3] + "..."
+                    text[i] = text[i][:maxcol - 3] + '...'
 
-        return make_canvas(text, attr, maxcol, apfx+"value")
+        return make_canvas(text, attr, maxcol, apfx + 'value')
 
     def keypress(self, size, key):
         return key
 
-# }}}
 
+# }}}
 
 custom_stringifier_dict = {}
 
 
 def type_stringifier(value):
     if HAVE_NUMPY and isinstance(value, numpy.ndarray):
-        return "ndarray %s %s" % (value.dtype, value.shape)
+        return 'ndarray %s %s' % (value.dtype, value.shape)
 
     elif isinstance(value, STR_SAFE_TYPES):
         try:
@@ -259,7 +288,7 @@ def type_stringifier(value):
         except Exception:
             pass
 
-    elif hasattr(type(value), "safely_stringify_for_pudb"):
+    elif hasattr(type(value), 'safely_stringify_for_pudb'):
         try:
             # (E.g.) Mock objects will pretend to have this
             # and return nonsense.
@@ -271,45 +300,54 @@ def type_stringifier(value):
                 return result
 
     elif type(value) in [set, frozenset, list, tuple, dict]:
-        return "%s (%s)" % (type(value).__name__, len(value))
+        return '%s (%s)' % (type(value).__name__, len(value))
 
     return type(value).__name__
 
 
 def get_stringifier(iinfo):
-    if iinfo.display_type == "type":
+    if iinfo.display_type == 'type':
         return type_stringifier
-    elif iinfo.display_type == "repr":
+    elif iinfo.display_type == 'repr':
         return repr
-    elif iinfo.display_type == "str":
+    elif iinfo.display_type == 'str':
         return str
     else:
         try:
             if not custom_stringifier_dict:  # Only execfile once
                 from os.path import expanduser
-                execfile(expanduser(iinfo.display_type), custom_stringifier_dict)
+                execfile(
+                    expanduser(iinfo.display_type), custom_stringifier_dict
+                )
         except Exception:
-            print("Error when importing custom stringifier:")
+            print('Error when importing custom stringifier:')
             from traceback import print_exc
             print_exc()
-            raw_input("Hit enter:")
-            return lambda value: "ERROR: Invalid custom stringifier file."
+            raw_input('Hit enter:')
+            return lambda value: 'ERROR: Invalid custom stringifier file.'
         else:
-            if "pudb_stringifier" not in custom_stringifier_dict:
-                print("%s does not contain a function named pudb_stringifier at "
-                      "the module level." % iinfo.display_type)
-                raw_input("Hit enter:")
-                return lambda value: ("ERROR: Invalid custom stringifier file: "
-                "pudb_stringifer not defined.")
+            if 'pudb_stringifier' not in custom_stringifier_dict:
+                print(
+                    '%s does not contain a function named pudb_stringifier at '
+                    'the module level.' % iinfo.display_type
+                )
+                raw_input('Hit enter:')
+                return lambda value: (
+                    'ERROR: Invalid custom stringifier file: '
+                    'pudb_stringifer not defined.'
+                )
             else:
-                return (lambda value:
-                    str(custom_stringifier_dict["pudb_stringifier"](value)))
+                return (
+                    lambda value:
+                    str(custom_stringifier_dict['pudb_stringifier'](value))
+                )
 
 
 # {{{ tree walking
 
+
 class ValueWalker:
-    PREFIX = "| "
+    PREFIX = '| '
 
     def __init__(self, frame_var_info):
         self.frame_var_info = frame_var_info
@@ -333,21 +371,20 @@ class ValueWalker:
                 # Unfortunately, anything can happen when calling str() or
                 # repr() on a random object.
                 displayed_value = type_stringifier(value) \
-                                + " (!! %s error !!)" % iinfo.display_type
+                                + ' (!! %s error !!)' % iinfo.display_type
 
             if iinfo.show_detail:
-                if iinfo.access_level == "public":
-                    marker = "pub"
-                elif iinfo.access_level == "private":
-                    marker = "pri"
+                if iinfo.access_level == 'public':
+                    marker = 'pub'
+                elif iinfo.access_level == 'private':
+                    marker = 'pri'
                 else:
-                    marker = "all"
+                    marker = 'all'
                 if iinfo.show_methods:
-                    marker += "+()"
-                displayed_value += " [%s]" % marker
+                    marker += '+()'
+                displayed_value += ' [%s]' % marker
 
-            self.add_item(prefix, label,
-                displayed_value, id_path, attr_prefix)
+            self.add_item(prefix, label, displayed_value, id_path, attr_prefix)
 
             if not iinfo.show_detail:
                 return
@@ -356,17 +393,20 @@ class ValueWalker:
             if isinstance(value, (set, frozenset)):
                 for i, entry in enumerate(value):
                     if i % 10 == 0 and i:
-                        cont_id_path = "%s.cont-%d" % (id_path, i)
+                        cont_id_path = '%s.cont-%d' % (id_path, i)
                         if not self.frame_var_info.get_inspect_info(
                                 cont_id_path, read_only=True).show_detail:
-                            self.add_item(prefix+self.PREFIX, "...",
-                                    None, cont_id_path)
+                            self.add_item(
+                                prefix + self.PREFIX, '...', None, cont_id_path
+                            )
                             break
 
-                    self.walk_value(prefix+self.PREFIX, None, entry,
-                        "%s[%d]" % (id_path, i))
+                    self.walk_value(
+                        prefix + self.PREFIX, None, entry,
+                        '%s[%d]' % (id_path, i)
+                    )
                 if not value:
-                    self.add_item(prefix+self.PREFIX, "<empty>", None)
+                    self.add_item(prefix + self.PREFIX, '<empty>', None)
                 return
 
             # containers --------------------------------------------------
@@ -399,18 +439,21 @@ class ValueWalker:
                 cnt = 0
                 for key in key_it:
                     if cnt % 10 == 0 and cnt:
-                        cont_id_path = "%s.cont-%d" % (id_path, cnt)
+                        cont_id_path = '%s.cont-%d' % (id_path, cnt)
                         if not self.frame_var_info.get_inspect_info(
                                 cont_id_path, read_only=True).show_detail:
                             self.add_item(
-                                prefix+self.PREFIX, "...", None, cont_id_path)
+                                prefix + self.PREFIX, '...', None, cont_id_path
+                            )
                             break
 
-                    self.walk_value(prefix+self.PREFIX, repr(key), value[key],
-                        "%s[%r]" % (id_path, key))
+                    self.walk_value(
+                        prefix + self.PREFIX, repr(key), value[key],
+                        '%s[%r]' % (id_path, key)
+                    )
                     cnt += 1
                 if not cnt:
-                    self.add_item(prefix+self.PREFIX, "<empty>", None)
+                    self.add_item(prefix + self.PREFIX, '<empty>', None)
                 return
 
             # class types -------------------------------------------------
@@ -421,20 +464,18 @@ class ValueWalker:
             except Exception:
                 pass
 
-            keys = [key
-                    for ki in key_its
-                    for key in ki]
+            keys = [key for ki in key_its for key in ki]
             keys.sort()
 
             cnt_omitted_private = cnt_omitted_methods = 0
 
             for key in keys:
-                if iinfo.access_level == "public":
-                    if key.startswith("_"):
+                if iinfo.access_level == 'public':
+                    if key.startswith('_'):
                         cnt_omitted_private += 1
                         continue
-                elif iinfo.access_level == "private":
-                    if key.startswith("__") and key.endswith("__"):
+                elif iinfo.access_level == 'private':
+                    if key.startswith('__') and key.endswith('__'):
                         cnt_omitted_private += 1
                         continue
 
@@ -446,21 +487,22 @@ class ValueWalker:
                 except Exception:
                     attr_value = WatchEvalError()
 
-                self.walk_value(prefix+self.PREFIX,
-                        ".%s" % key, attr_value,
-                        "%s.%s" % (id_path, key))
+                self.walk_value(
+                    prefix + self.PREFIX, '.%s' % key, attr_value,
+                    '%s.%s' % (id_path, key)
+                )
 
             if not keys:
                 if cnt_omitted_private:
-                    label = "<omitted private attributes>"
+                    label = '<omitted private attributes>'
                 elif cnt_omitted_methods:
-                    label = "<omitted methods>"
+                    label = '<omitted methods>'
                 else:
-                    label = "<empty>"
-                self.add_item(prefix+self.PREFIX, label, None)
+                    label = '<empty>'
+                self.add_item(prefix + self.PREFIX, label, None)
 
             if not key_its:
-                self.add_item(prefix+self.PREFIX, "<?>", None)
+                self.add_item(prefix + self.PREFIX, '<?>', None)
 
 
 class BasicValueWalker(ValueWalker):
@@ -469,13 +511,18 @@ class BasicValueWalker(ValueWalker):
 
         self.widget_list = []
 
-    def add_item(self, prefix, var_label, value_str, id_path=None, attr_prefix=None):
+    def add_item(
+            self, prefix, var_label, value_str, id_path=None, attr_prefix=None
+    ):
         iinfo = self.frame_var_info.get_inspect_info(id_path, read_only=True)
         if iinfo.highlighted:
-            attr_prefix = "highlighted var"
+            attr_prefix = 'highlighted var'
 
-        self.widget_list.append(VariableWidget(prefix, var_label, value_str,
-            id_path, attr_prefix, iinfo=iinfo))
+        self.widget_list.append(
+            VariableWidget(
+                prefix, var_label, value_str, id_path, attr_prefix, iinfo=iinfo
+            )
+        )
 
 
 class WatchValueWalker(ValueWalker):
@@ -484,14 +531,24 @@ class WatchValueWalker(ValueWalker):
         self.widget_list = widget_list
         self.watch_expr = watch_expr
 
-    def add_item(self, prefix, var_label, value_str, id_path=None, attr_prefix=None):
+    def add_item(
+            self, prefix, var_label, value_str, id_path=None, attr_prefix=None
+    ):
         iinfo = self.frame_var_info.get_inspect_info(id_path, read_only=True)
         if iinfo.highlighted:
-            attr_prefix = "highlighted var"
+            attr_prefix = 'highlighted var'
 
         self.widget_list.append(
-                VariableWidget(prefix, var_label, value_str, id_path, attr_prefix,
-                    watch_expr=self.watch_expr, iinfo=iinfo))
+            VariableWidget(
+                prefix,
+                var_label,
+                value_str,
+                id_path,
+                attr_prefix,
+                watch_expr=self.watch_expr,
+                iinfo=iinfo
+            )
+        )
 
 
 class TopAndMainVariableWalker(ValueWalker):
@@ -503,10 +560,12 @@ class TopAndMainVariableWalker(ValueWalker):
 
         self.top_id_path_prefixes = []
 
-    def add_item(self, prefix, var_label, value_str, id_path=None, attr_prefix=None):
+    def add_item(
+            self, prefix, var_label, value_str, id_path=None, attr_prefix=None
+    ):
         iinfo = self.frame_var_info.get_inspect_info(id_path, read_only=True)
         if iinfo.highlighted:
-            attr_prefix = "highlighted var"
+            attr_prefix = 'highlighted var'
 
         repeated_at_top = iinfo.repeated_at_top
         if repeated_at_top and id_path is not None:
@@ -517,18 +576,29 @@ class TopAndMainVariableWalker(ValueWalker):
                 repeated_at_top = True
 
         if repeated_at_top:
-            self.top_widget_list.append(VariableWidget(prefix, var_label,
-                value_str, id_path, attr_prefix, iinfo=iinfo))
+            self.top_widget_list.append(
+                VariableWidget(
+                    prefix,
+                    var_label,
+                    value_str,
+                    id_path,
+                    attr_prefix,
+                    iinfo=iinfo
+                )
+            )
 
-        self.main_widget_list.append(VariableWidget(prefix, var_label,
-            value_str, id_path, attr_prefix, iinfo=iinfo))
+        self.main_widget_list.append(
+            VariableWidget(
+                prefix, var_label, value_str, id_path, attr_prefix, iinfo=iinfo
+            )
+        )
+
 
 # }}}
 
-
 # {{{ top level
 
-SEPARATOR = urwid.AttrMap(urwid.Text(""), "variable separator")
+SEPARATOR = urwid.AttrMap(urwid.Text(''), 'variable separator')
 
 
 def make_var_view(frame_var_info, locals, globals):
@@ -546,15 +616,16 @@ def make_var_view(frame_var_info, locals, globals):
             value = WatchEvalError()
 
         WatchValueWalker(frame_var_info, watch_widget_list, watch_expr) \
-                .walk_value("", watch_expr.expression, value)
+                .walk_value('', watch_expr.expression, value)
 
-    if "__return__" in vars:
-        ret_walker.walk_value("", "Return", locals["__return__"],
-                attr_prefix="return")
+    if '__return__' in vars:
+        ret_walker.walk_value(
+            '', 'Return', locals['__return__'], attr_prefix='return'
+        )
 
     for var in vars:
         if not (var.startswith('__') and var.endswith('__')):
-            tmv_walker.walk_value("", var, locals[var])
+            tmv_walker.walk_value('', var, locals[var])
 
     result = tmv_walker.main_widget_list
 
@@ -581,6 +652,7 @@ class FrameVarInfoKeeper(object):
             return self.frame_var_info.get(ssid, FrameVarInfo())
         else:
             return self.frame_var_info.setdefault(ssid, FrameVarInfo())
+
 
 # }}}
 

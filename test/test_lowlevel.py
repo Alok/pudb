@@ -10,11 +10,7 @@ def test_detect_encoding_nocookie():
 
 
 def test_detect_encoding_cookie():
-    lines = [
-        '# coding=utf-8',
-        'Test',
-        'Проверка'
-    ]
+    lines = ['# coding=utf-8', 'Test', 'Проверка']
     encoding, _ = detect_encoding(lines)
     assert encoding == 'utf-8'
 

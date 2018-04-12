@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-"""
-This file shows how you can define a custom stringifier for PuDB.
+"""This file shows how you can define a custom stringifier for PuDB.
 
 A stringifier is a function that is called on the variables in the namespace
 for display in the variables list.  The default is type()*, as this is fast and
@@ -43,18 +42,20 @@ import signal
 import sys
 import math
 
+
 class TimeOutError(Exception):
     pass
 
+
 def timeout(signum, frame, time):
-    raise TimeOutError("Timed out after %d seconds" % time)
+    raise TimeOutError('Timed out after %d seconds' % time)
+
 
 def run_with_timeout(code, time, globals=None):
-    """
-    Evaluate ``code``, timing out after ``time`` seconds.
+    """Evaluate ``code``, timing out after ``time`` seconds.
 
-    In Python 2.5 and lower, ``time`` is rounded up to the nearest integer.
-    The return value is whatever ``code`` returns.
+    In Python 2.5 and lower, ``time`` is rounded up to the nearest
+    integer. The return value is whatever ``code`` returns.
     """
     # Set the signal handler and a ``time``-second alarm
     signal.signal(signal.SIGALRM, lambda s, f: timeout(s, f, time))
@@ -67,31 +68,35 @@ def run_with_timeout(code, time, globals=None):
         time = int(math.ceil(time))
         signal.alarm(time)
     r = eval(code, globals)
-    signal.alarm(0)          # Disable the alarm
+    signal.alarm(0)  # Disable the alarm
     return r
 
+
 def pudb_stringifier(obj):
-    """
-    This is the custom stringifier.
+    """This is the custom stringifier.
 
     It returns str(obj), unless it take more than a second to compute,
     in which case it falls back to type(obj).
     """
     try:
-        return run_with_timeout("str(obj)", 0.5, {'obj':obj})
+        return run_with_timeout('str(obj)', 0.5, {'obj': obj})
     except TimeOutError:
-        return (type(obj), "(str too slow to compute)")
+        return (type(obj), '(str too slow to compute)')
+
 
 # Example usage
 
+
 class FastString(object):
     def __str__(self):
-        return "This was fast to compute."
+        return 'This was fast to compute.'
+
 
 class SlowString(object):
     def __str__(self):
-        time.sleep(10) # Return the string value after ten seconds
-        return "This was slow to compute."
+        time.sleep(10)  # Return the string value after ten seconds
+        return 'This was slow to compute.'
+
 
 fast = FastString()
 slow = SlowString()

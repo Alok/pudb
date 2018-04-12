@@ -8,8 +8,7 @@ from IPython import get_ipython
 
 
 def pudb(line):
-    """
-    Debug a script (like %run -d) in the IPython process, using PuDB.
+    """Debug a script (like %run -d) in the IPython process, using PuDB.
 
     Usage:
 
@@ -30,7 +29,7 @@ def pudb(line):
     args = args[1:]
     if not os.path.isfile(path):
         from IPython.core.error import UsageError
-        raise UsageError("%%pudb: file %s does not exist" % path)
+        raise UsageError('%%pudb: file %s does not exist' % path)
 
     from pudb import runscript
     runscript(path, args)

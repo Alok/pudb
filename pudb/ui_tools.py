@@ -2,18 +2,17 @@ from __future__ import absolute_import, division, print_function
 import urwid
 from urwid.util import _target_encoding, calc_width, calc_text_pos
 
-
 # generic urwid helpers -------------------------------------------------------
 
+
 def text_width(txt):
-    """
-    Return the width of the text in the terminal
+    """Return the width of the text in the terminal.
 
-    Use this instead of len() whenever txt could contain double- or zero-width
-    Unicode characters.
-
+    Use this instead of len() whenever txt could contain double- or
+    zero-width Unicode characters.
     """
     return calc_width(txt, 0, len(txt))
+
 
 def make_canvas(txt, attr, maxcol, fill_attr=None):
     processed_txt = []
@@ -26,7 +25,7 @@ def make_canvas(txt, attr, maxcol, fill_attr=None):
 
         diff = maxcol - text_width(line)
         if diff > 0:
-            line += " "*diff
+            line += ' ' * diff
             line_attr.append((fill_attr, diff))
         else:
             from urwid.util import rle_subseg
@@ -41,7 +40,9 @@ def make_canvas(txt, attr, maxcol, fill_attr=None):
         def get_byte_line_attr(line, line_attr):
             i = 0
             for label, column_count in line_attr:
-                byte_count = len(line[i:i+column_count].encode(_target_encoding))
+                byte_count = len(
+                    line[i:i + column_count].encode(_target_encoding)
+                )
                 i += column_count
                 yield label, byte_count
 
@@ -52,10 +53,8 @@ def make_canvas(txt, attr, maxcol, fill_attr=None):
         processed_cs.append(line_cs)
 
     return urwid.TextCanvas(
-            processed_txt,
-            processed_attr,
-            processed_cs,
-            maxcol=maxcol)
+        processed_txt, processed_attr, processed_cs, maxcol=maxcol
+    )
 
 
 def make_hotkey_markup(s):
@@ -64,16 +63,16 @@ def make_hotkey_markup(s):
     assert match is not None
 
     return [
-            (None, match.group(1)),
-            ("hotkey", match.group(2)),
-            (None, match.group(3)),
-            ]
+        (None, match.group(1)),
+        ('hotkey', match.group(2)),
+        (None, match.group(3)),
+    ]
 
 
 def labelled_value(label, value):
-    return urwid.AttrMap(urwid.Text([
-        ("label", label), str(value)]),
-        "fixed value", "fixed value")
+    return urwid.AttrMap(
+        urwid.Text([('label', label), str(value)]), 'fixed value', 'fixed value'
+    )
 
 
 class SelectableText(urwid.Text):
@@ -115,6 +114,7 @@ class SignalWrap(urwid.WidgetWrap):
 
 # {{{ debugger-specific stuff
 
+
 class StackFrame(urwid.FlowWidget):
     def __init__(self, is_current, name, class_name, filename, line):
         self.is_current = is_current
@@ -132,28 +132,28 @@ class StackFrame(urwid.FlowWidget):
     def render(self, size, focus=False):
         maxcol = size[0]
         if focus:
-            apfx = "focused "
+            apfx = 'focused '
         else:
-            apfx = ""
+            apfx = ''
 
         if self.is_current:
-            apfx += "current "
-            crnt_pfx = ">> "
+            apfx += 'current '
+            crnt_pfx = '>> '
         else:
-            crnt_pfx = "   "
+            crnt_pfx = '   '
 
-        text = crnt_pfx+self.name
-        attr = [(apfx+"frame name", 3+len(self.name))]
+        text = crnt_pfx + self.name
+        attr = [(apfx + 'frame name', 3 + len(self.name))]
 
         if self.class_name is not None:
-            text += " [%s]" % self.class_name
-            attr.append((apfx+"frame class", len(self.class_name)+3))
+            text += ' [%s]' % self.class_name
+            attr.append((apfx + 'frame class', len(self.class_name) + 3))
 
-        loc = " %s:%d" % (self.filename, self.line)
+        loc = ' %s:%d' % (self.filename, self.line)
         text += loc
-        attr.append((apfx+"frame location", len(loc)))
+        attr.append((apfx + 'frame location', len(loc)))
 
-        return make_canvas([text], [attr], maxcol, apfx+"frame location")
+        return make_canvas([text], [attr], maxcol, apfx + 'frame location')
 
     def keypress(self, size, key):
         return key
@@ -177,25 +177,27 @@ class BreakpointFrame(urwid.FlowWidget):
     def render(self, size, focus=False):
         maxcol = size[0]
         if focus:
-            apfx = "focused "
+            apfx = 'focused '
         else:
-            apfx = ""
+            apfx = ''
 
         bp_pfx = ''
         if not self.enabled:
-            apfx += "disabled "
-            bp_pfx += "X"
+            apfx += 'disabled '
+            bp_pfx += 'X'
         if self.is_current:
-            apfx += "current "
-            bp_pfx += ">>"
+            apfx += 'current '
+            bp_pfx += '>>'
         bp_pfx = bp_pfx.ljust(3)
 
         hits_label = 'hits' if self.hits != 1 else 'hit'
-        loc = " %s:%d (%s %s)" % (self.filename, self.line, self.hits, hits_label)
-        text = bp_pfx+loc
-        attr = [(apfx+"breakpoint", len(loc))]
+        loc = ' %s:%d (%s %s)' % (
+            self.filename, self.line, self.hits, hits_label
+        )
+        text = bp_pfx + loc
+        attr = [(apfx + 'breakpoint', len(loc))]
 
-        return make_canvas([text], [attr], maxcol, apfx+"breakpoint")
+        return make_canvas([text], [attr], maxcol, apfx + 'breakpoint')
 
     def keypress(self, size, key):
         return key
@@ -230,11 +232,9 @@ class SearchController(object):
             _, self.search_start = self.ui.source.get_focus()
 
             self.search_box = SearchBox(self)
-            self.search_AttrMap = urwid.AttrMap(
-                    self.search_box, "search box")
+            self.search_AttrMap = urwid.AttrMap(self.search_box, 'search box')
 
-            lhs_col.item_types.insert(
-                    0, ("flow", None))
+            lhs_col.item_types.insert(0, ('flow', None))
             lhs_col.widget_list.insert(0, self.search_AttrMap)
 
             self.ui.columns.set_focus(lhs_col)
@@ -244,7 +244,9 @@ class SearchController(object):
             lhs_col.set_focus(self.search_AttrMap)
             #self.search_box.restart_search()
 
-    def perform_search(self, dir, s=None, start=None, update_search_start=False):
+    def perform_search(
+            self, dir, s=None, start=None, update_search_start=False
+    ):
         self.cancel_highlight()
 
         # self.ui.lhs_col.set_focus(self.ui.lhs_col.widget_list[1])
@@ -253,7 +255,7 @@ class SearchController(object):
             s = self.last_search_string
 
             if s is None:
-                self.ui.message("No previous search term.")
+                self.ui.message('No previous search term.')
                 return False
         else:
             self.last_search_string = s
@@ -266,7 +268,7 @@ class SearchController(object):
         if start > len(self.ui.source):
             start = 0
 
-        i = (start+dir) % len(self.ui.source)
+        i = (start + dir) % len(self.ui.source)
 
         if i >= len(self.ui.source):
             i = 0
@@ -287,14 +289,14 @@ class SearchController(object):
 
                 return True
 
-            i = (i+dir) % len(self.ui.source)
+            i = (i + dir) % len(self.ui.source)
 
         return False
 
 
 class SearchBox(urwid.Edit):
     def __init__(self, controller):
-        urwid.Edit.__init__(self, [("label", "Search: ")], "")
+        urwid.Edit.__init__(self, [('label', 'Search: ')], '')
         self.controller = controller
 
     def restart_search(self):
@@ -302,7 +304,7 @@ class SearchBox(urwid.Edit):
         now = time()
 
         if self.search_start_time > 5:
-            self.set_edit_text("")
+            self.set_edit_text('')
 
         self.search_time = now
 
@@ -311,24 +313,30 @@ class SearchBox(urwid.Edit):
         txt = self.get_edit_text()
 
         if result is not None:
-            if key == "esc":
+            if key == 'esc':
                 self.controller.cancel_search()
                 return None
-            elif key == "enter":
+            elif key == 'enter':
                 if txt:
                     self.controller.hide_search_ui()
-                    self.controller.perform_search(dir=1, s=txt,
-                            update_search_start=True)
+                    self.controller.perform_search(
+                        dir=1, s=txt, update_search_start=True
+                    )
                 else:
                     self.controller.cancel_search()
                 return None
         else:
             if self.controller.perform_search(dir=1, s=txt):
-                self.controller.search_AttrMap.set_attr_map({None: "search box"})
+                self.controller.search_AttrMap.set_attr_map({
+                    None: 'search box'
+                })
             else:
-                self.controller.search_AttrMap.set_attr_map(
-                        {None: "search not found"})
+                self.controller.search_AttrMap.set_attr_map({
+                    None:
+                    'search not found'
+                })
 
         return result
+
 
 # }}}

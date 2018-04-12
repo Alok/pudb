@@ -27,9 +27,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-
 # mostly stolen from celery.contrib.rdb
-
 
 import errno
 import os
@@ -41,8 +39,9 @@ import struct
 
 from pudb.debugger import Debugger
 
-__all__ = ['PUDB_RDB_HOST', 'PUDB_RDB_PORT', 'default_port',
-           'debugger', 'set_trace']
+__all__ = [
+    'PUDB_RDB_HOST', 'PUDB_RDB_PORT', 'default_port', 'debugger', 'set_trace'
+]
 
 default_port = 6899
 
@@ -74,15 +73,22 @@ class RemoteDebugger(Debugger):
     _prev_outs = None
     _sock = None
 
-    def __init__(self, host=PUDB_RDB_HOST, port=PUDB_RDB_PORT,
-                 port_search_limit=100, out=sys.stdout, term_size=None):
+    def __init__(
+            self,
+            host=PUDB_RDB_HOST,
+            port=PUDB_RDB_PORT,
+            port_search_limit=100,
+            out=sys.stdout,
+            term_size=None
+    ):
         self.active = True
         self.out = out
 
         self._prev_handles = sys.stdin, sys.stdout
 
         self._sock, this_port = self.get_avail_port(
-            host, port, port_search_limit)
+            host, port, port_search_limit
+        )
         self._sock.setblocking(1)
         self._sock.listen(1)
         self.ident = '{0}:{1}'.format(self.me, this_port)
@@ -96,21 +102,20 @@ class RemoteDebugger(Debugger):
         self.say(SESSION_STARTED.format(self=self))
 
         # makefile ignores encoding if there's no buffering.
-        raw_sock_file = self._client.makefile("rwb", 0)
+        raw_sock_file = self._client.makefile('rwb', 0)
         import codecs
 
         if sys.version_info[0] < 3:
             sock_file = codecs.StreamRecoder(
-                raw_sock_file,
-                codecs.getencoder("utf-8"),
-                codecs.getdecoder("utf-8"),
-                codecs.getreader("utf-8"),
-                codecs.getwriter("utf-8"))
+                raw_sock_file, codecs.getencoder('utf-8'),
+                codecs.getdecoder('utf-8'), codecs.getreader('utf-8'),
+                codecs.getwriter('utf-8')
+            )
         else:
             sock_file = codecs.StreamReaderWriter(
-                raw_sock_file,
-                codecs.getreader("utf-8"),
-                codecs.getwriter("utf-8"))
+                raw_sock_file, codecs.getreader('utf-8'),
+                codecs.getwriter('utf-8')
+            )
 
         self._handle = sys.stdin = sys.stdout = sock_file
 
@@ -124,8 +129,9 @@ class RemoteDebugger(Debugger):
         resp = raw_sock_file.read(3)
         assert resp == tn.IAC + tn.DO + tn.ECHO
 
-        Debugger.__init__(self, stdin=self._handle, stdout=self._handle,
-                term_size=term_size)
+        Debugger.__init__(
+            self, stdin=self._handle, stdout=self._handle, term_size=term_size
+        )
 
     def get_avail_port(self, host, port, search_limit=100, skew=+0):
         this_port = None
@@ -159,6 +165,7 @@ class RemoteDebugger(Debugger):
         self._close_session()
         self.set_continue()
         return 1
+
     do_c = do_cont = do_continue
 
     def do_quit(self, arg):
@@ -172,16 +179,19 @@ class RemoteDebugger(Debugger):
 
 
 def debugger(term_size=None, host=PUDB_RDB_HOST, port=PUDB_RDB_PORT):
-    """Return the current debugger instance (if any),
-    or creates a new one."""
+    """Return the current debugger instance (if any), or creates a new one."""
     rdb = _current[0]
     if rdb is None or not rdb.active:
-        rdb = _current[0] = RemoteDebugger(host=host, port=port, term_size=term_size)
+        rdb = _current[0] = RemoteDebugger(
+            host=host, port=port, term_size=term_size
+        )
     return rdb
 
 
-def set_trace(frame=None, term_size=None, host=PUDB_RDB_HOST, port=PUDB_RDB_PORT):
-    """Set breakpoint at current location, or a specified frame"""
+def set_trace(
+        frame=None, term_size=None, host=PUDB_RDB_HOST, port=PUDB_RDB_PORT
+):
+    """Set breakpoint at current location, or a specified frame."""
     if frame is None:
         frame = _frame().f_back
     if term_size is None:

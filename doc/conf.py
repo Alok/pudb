@@ -19,8 +19,8 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('..'))
 
+sys.path.insert(0, os.path.abspath('..'))
 
 # -- General configuration ------------------------------------------------
 
@@ -56,10 +56,10 @@ author = 'Andreas Kloeckner and contributors'
 #
 # The short X.Y version.
 ver_dic = {}
-with open("../pudb/__init__.py") as ver_file:
+with open('../pudb/__init__.py') as ver_file:
     ver_src = ver_file.read()
-exec(compile(ver_src, "../pudb/__init__.py", 'exec'), ver_dic)
-version = ".".join(str(x) for x in ver_dic["VERSION"])
+exec(compile(ver_src, '../pudb/__init__.py', 'exec'), ver_dic)
+version = '.'.join(str(x) for x in ver_dic['VERSION'])
 
 # The full version, including alpha/beta/rc tags.
 release = version
@@ -74,14 +74,17 @@ language = None
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This patterns also effect to html_static_path and html_extra_path
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = [
+    '_build',
+    'Thumbs.db',
+    '.DS_Store',
+]
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = False
-
 
 # -- Options for HTML output ----------------------------------------------
 
@@ -96,14 +99,14 @@ html_theme = 'alabaster'
 #
 # html_theme_options = {}
 
-html_theme = "alabaster"
+html_theme = 'alabaster'
 
 html_theme_options = {
-        "extra_nav_links": {
-            "🚀 Github": "https://github.com/inducer/pudb",
-            "💾 Download Releases": "https://pypi.python.org/pypi/pudb",
-            }
-        }
+    'extra_nav_links': {
+        '🚀 Github': 'https://github.com/inducer/pudb',
+        '💾 Download Releases': 'https://pypi.python.org/pypi/pudb',
+    }
+}
 
 html_sidebars = {
     '**': [
@@ -119,12 +122,10 @@ html_sidebars = {
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 
-
 # -- Options for HTMLHelp output ------------------------------------------
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'pudbdoc'
-
 
 # -- Options for LaTeX output ---------------------------------------------
 
@@ -149,21 +150,25 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
-latex_documents = [
-    (master_doc, 'pudb.tex', 'pudb Documentation',
-     'Andreas Kloeckner and contributors', 'manual'),
-]
-
+latex_documents = [(
+    master_doc,
+    'pudb.tex',
+    'pudb Documentation',
+    'Andreas Kloeckner and contributors',
+    'manual',
+)]
 
 # -- Options for manual page output ---------------------------------------
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [
-    (master_doc, 'pudb', 'pudb Documentation',
-     [author], 1)
-]
-
+man_pages = [(
+    master_doc,
+    'pudb',
+    'pudb Documentation',
+    [author],
+    1,
+)]
 
 # -- Options for Texinfo output -------------------------------------------
 
@@ -171,9 +176,15 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'pudb', 'pudb Documentation',
-     author, 'pudb', 'One line description of project.',
-     'Miscellaneous'),
+    (
+        master_doc,
+        'pudb',
+        'pudb Documentation',
+        author,
+        'pudb',
+        'One line description of project.',
+        'Miscellaneous',
+    ),
 ]
 
-autoclass_content = "both"
+autoclass_content = 'both'

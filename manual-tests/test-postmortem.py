@@ -1,6 +1,7 @@
 def f():
     fail
 
+
 try:
     f()
 except:

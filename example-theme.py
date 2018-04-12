@@ -22,6 +22,6 @@
 # of the preferences window). Curses mode will be used with screen or tmux.
 
 palette.update({
-    "source": (add_setting("black", "underline"), "dark green"),
-    "comment": ("h250", "default")
-    })
+    'source': (add_setting('black', 'underline'), 'dark green'),
+    'comment': ('h250', 'default')
+})

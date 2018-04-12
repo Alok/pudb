@@ -6,12 +6,16 @@ def main():
 
     from optparse import OptionParser
     parser = OptionParser(
-            usage="usage: %prog [options] SCRIPT-TO-RUN [SCRIPT-ARGUMENTS]")
+        usage='usage: %prog [options] SCRIPT-TO-RUN [SCRIPT-ARGUMENTS]'
+    )
 
-    parser.add_option("-s", "--steal-output", action="store_true"),
-    parser.add_option("--pre-run", metavar="COMMAND",
-            help="Run command before each program run",
-            default="")
+    parser.add_option('-s', '--steal-output', action='store_true'),
+    parser.add_option(
+        '--pre-run',
+        metavar='COMMAND',
+        help='Run command before each program run',
+        default=''
+    )
     parser.disable_interspersed_args()
     options, args = parser.parse_args()
 
@@ -29,9 +33,9 @@ def main():
     sys.argv = args
 
     from pudb import runscript
-    runscript(mainpyfile,
-            pre_run=options.pre_run,
-            steal_output=options.steal_output)
+    runscript(
+        mainpyfile, pre_run=options.pre_run, steal_output=options.steal_output
+    )
 
 
 if __name__ == '__main__':

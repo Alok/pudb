@@ -25,15 +25,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-
 import urwid
-
 
 TABSTOP = 8
 
 
 class SourceLine(urwid.FlowWidget):
-    def __init__(self, dbg_ui, text, line_nr='', attr=None, has_breakpoint=False):
+    def __init__(
+            self, dbg_ui, text, line_nr='', attr=None, has_breakpoint=False
+    ):
         self.dbg_ui = dbg_ui
         self.text = text
         self.attr = attr
@@ -62,7 +62,7 @@ class SourceLine(urwid.FlowWidget):
 
     def render(self, size, focus=False):
         from pudb.debugger import CONFIG
-        render_line_nr = CONFIG["line_numbers"]
+        render_line_nr = CONFIG['line_numbers']
 
         maxcol = size[0]
         hscroll = self.dbg_ui.source_hscroll_start
@@ -71,41 +71,41 @@ class SourceLine(urwid.FlowWidget):
         attrs = []
 
         if self.is_current:
-            crnt = ">"
-            attrs.append("current")
+            crnt = '>'
+            attrs.append('current')
         else:
-            crnt = " "
+            crnt = ' '
 
         if self.has_breakpoint:
-            bp = "*"
-            attrs.append("breakpoint")
+            bp = '*'
+            attrs.append('breakpoint')
         else:
-            bp = " "
+            bp = ' '
 
         if focus:
-            attrs.append("focused")
+            attrs.append('focused')
         elif self.highlight:
             if not self.has_breakpoint:
-                attrs.append("highlighted")
+                attrs.append('highlighted')
 
         text = self.text
         if not attrs and self.attr is not None:
-            attr = self.attr + [("source", None)]
+            attr = self.attr + [('source', None)]
         else:
-            attr = [(" ".join(attrs+["source"]), None)]
+            attr = [(' '.join(attrs + ['source']), None)]
 
         from urwid.util import apply_target_encoding, trim_text_attr_cs
 
         # build line prefix ---------------------------------------------------
-        line_prefix = ""
+        line_prefix = ''
         line_prefix_attr = []
 
         if render_line_nr and self.line_nr:
-            line_prefix_attr = [("line number", len(self.line_nr))]
+            line_prefix_attr = [('line number', len(self.line_nr))]
             line_prefix = self.line_nr
 
-        line_prefix = crnt+bp+line_prefix
-        line_prefix_attr = [("source", 1), ("breakpoint marker", 1)] \
+        line_prefix = crnt + bp + line_prefix
+        line_prefix_attr = [('source', 1), ('breakpoint marker', 1)] \
                 + line_prefix_attr
 
         # assume rendered width is same as len
@@ -127,14 +127,17 @@ class SourceLine(urwid.FlowWidget):
                 # means: gobble up remainder of text and rest of line
                 # and fill with attribute
 
-                rowlen = hscroll+maxcol
+                rowlen = hscroll + maxcol
                 remaining_text = text[i:]
                 encoded_seg_text, seg_cs = apply_target_encoding(
-                        remaining_text + rowlen*" ")
-                encoded_attr.append((seg_attr, len(remaining_text)+rowlen))
+                    remaining_text + rowlen * ' '
+                )
+                encoded_attr.append((seg_attr, len(remaining_text) + rowlen))
             else:
-                unencoded_seg_text = text[i:i+seg_len]
-                encoded_seg_text, seg_cs = apply_target_encoding(unencoded_seg_text)
+                unencoded_seg_text = text[i:i + seg_len]
+                encoded_seg_text, seg_cs = apply_target_encoding(
+                    unencoded_seg_text
+                )
 
                 adjustment = len(encoded_seg_text) - len(unencoded_seg_text)
 
@@ -145,31 +148,37 @@ class SourceLine(urwid.FlowWidget):
             encoded_text_segs.append(encoded_seg_text)
             cs.extend(seg_cs)
 
-        encoded_text = b"".join(encoded_text_segs)
+        encoded_text = b''.join(encoded_text_segs)
         encoded_text, encoded_attr, cs = trim_text_attr_cs(
-                encoded_text, encoded_attr, cs,
-                hscroll, hscroll+maxcol-line_prefix_len)
+            encoded_text, encoded_attr, cs, hscroll,
+            hscroll + maxcol - line_prefix_len
+        )
 
         encoded_text = encoded_line_prefix + encoded_text
         encoded_attr = line_prefix_attr + encoded_attr
         cs = line_prefix_cs + cs
 
-        return urwid.TextCanvas([encoded_text], [encoded_attr], [cs], maxcol=maxcol)
+        return urwid.TextCanvas([encoded_text], [encoded_attr], [cs],
+                                maxcol=maxcol)
 
     def keypress(self, size, key):
         return key
 
 
 def format_source(debugger_ui, lines, breakpoints):
-    lineno_format = "%%%dd " % (len(str(len(lines))))
+    lineno_format = '%%%dd ' % (len(str(len(lines))))
     try:
         import pygments  # noqa
     except ImportError:
-        return [SourceLine(debugger_ui,
-            line.rstrip("\n\r").expandtabs(TABSTOP),
-            lineno_format % (i+1), None,
-            has_breakpoint=i+1 in breakpoints)
-            for i, line in enumerate(lines)]
+        return [
+            SourceLine(
+                debugger_ui,
+                line.rstrip('\n\r').expandtabs(TABSTOP),
+                lineno_format % (i + 1),
+                None,
+                has_breakpoint=i + 1 in breakpoints
+            ) for i, line in enumerate(lines)
+        ]
     else:
         from pygments import highlight
         from pygments.lexers import PythonLexer
@@ -191,28 +200,28 @@ def format_source(debugger_ui, lines, breakpoints):
         #       beginning of add_snippet().
         #
         ATTR_MAP = {  # noqa: N806
-                t.Token: "source",
-                t.Keyword.Namespace: "namespace",
-                t.Token.Argument: "argument",
-                t.Token.Dunder: "dunder",
+                t.Token: 'source',
+                t.Keyword.Namespace: 'namespace',
+                t.Token.Argument: 'argument',
+                t.Token.Dunder: 'dunder',
                 t.Token.Keyword2: 'keyword2',
-                t.Keyword: "keyword",
-                t.Literal: "literal",
-                t.Name.Exception: "exception",
-                t.Name.Function: "name",
-                t.Name.Class: "name",
-                t.Name.Builtin: "builtin",
-                t.Name.Builtin.Pseudo: "pseudo",
-                t.Punctuation: "punctuation",
-                t.Operator: "operator",
-                t.String: "string",
+                t.Keyword: 'keyword',
+                t.Literal: 'literal',
+                t.Name.Exception: 'exception',
+                t.Name.Function: 'name',
+                t.Name.Class: 'name',
+                t.Name.Builtin: 'builtin',
+                t.Name.Builtin.Pseudo: 'pseudo',
+                t.Punctuation: 'punctuation',
+                t.Operator: 'operator',
+                t.String: 'string',
                 # XXX: Single and Double don't actually work yet.
                 # See https://bitbucket.org/birkenfeld/pygments-main/issue/685
-                t.String.Double: "doublestring",
-                t.String.Single: "singlestring",
-                t.String.Backtick: "backtick",
-                t.String.Doc: "docstring",
-                t.Comment: "comment",
+                t.String.Double: 'doublestring',
+                t.String.Single: 'singlestring',
+                t.String.Backtick: 'backtick',
+                t.String.Doc: 'docstring',
+                t.Comment: 'comment',
                 }
 
         # Token translation table. Maps token types and their
@@ -239,7 +248,7 @@ def format_source(debugger_ui, lines, breakpoints):
         class UrwidFormatter(Formatter):
             def __init__(subself, **options):  # noqa: N805
                 Formatter.__init__(subself, **options)
-                subself.current_line = ""
+                subself.current_line = ''
                 subself.current_attr = []
                 subself.lineno = 1
 
@@ -260,10 +269,8 @@ def format_source(debugger_ui, lines, breakpoints):
                             ttype = ATTR_TRANSLATE[ttype][s]
 
                     # Translate dunder method tokens
-                    if ttype == (
-                            t.Name.Function
-                            and s.startswith('__') and s.endswith('__')
-                            ):
+                    if ttype == (t.Name.Function and s.startswith('__')
+                                 and s.endswith('__')):
                         ttype = t.Token.Dunder
 
                     while ttype not in ATTR_MAP:
@@ -271,7 +278,8 @@ def format_source(debugger_ui, lines, breakpoints):
                             ttype = ttype.parent
                         else:
                             raise RuntimeError(
-                                    "untreated token type: %s" % str(ttype))
+                                'untreated token type: %s' % str(ttype)
+                            )
 
                     attr = ATTR_MAP[ttype]
 
@@ -280,44 +288,50 @@ def format_source(debugger_ui, lines, breakpoints):
 
                 def shipout_line():
                     result.append(
-                            SourceLine(debugger_ui,
-                                subself.current_line,
-                                lineno_format % subself.lineno,
-                                subself.current_attr,
-                                has_breakpoint=subself.lineno in breakpoints))
-                    subself.current_line = ""
+                        SourceLine(
+                            debugger_ui,
+                            subself.current_line,
+                            lineno_format % subself.lineno,
+                            subself.current_attr,
+                            has_breakpoint=subself.lineno in breakpoints
+                        )
+                    )
+                    subself.current_line = ''
                     subself.current_attr = []
                     subself.lineno += 1
 
                 for ttype, value in tokensource:
                     while True:
-                        newline_pos = value.find("\n")
+                        newline_pos = value.find('\n')
                         if newline_pos == -1:
                             add_snippet(ttype, value)
                             break
                         else:
                             add_snippet(ttype, value[:newline_pos])
                             shipout_line()
-                            value = value[newline_pos+1:]
+                            value = value[newline_pos + 1:]
 
                 if subself.current_line:
                     shipout_line()
 
-        highlight("".join(l.expandtabs(TABSTOP) for l in lines),
-                PythonLexer(stripnl=False), UrwidFormatter())
+        highlight(
+            ''.join(l.expandtabs(TABSTOP) for l in lines),
+            PythonLexer(stripnl=False),
+            UrwidFormatter()
+        )
 
         return result
 
 
 class ParseState(object):
-    '''States for the ArgumentParser class'''
+    """States for the ArgumentParser class."""
     idle = 1
     found_function = 2
     found_open_paren = 3
 
 
 class ArgumentParser(object):
-    '''Parse source code tokens and identify function arguments.
+    """Parse source code tokens and identify function arguments.
 
     This parser implements a state machine which accepts
     Pygments tokens, delivered sequentially from the beginning
@@ -329,7 +343,7 @@ class ArgumentParser(object):
     argument, it returns the correct token type for that
     item (the caller should then replace the associated item's
     token type with the returned type)
-    '''
+    """
 
     def __init__(self, pygments_token):
         self.t = pygments_token
@@ -337,7 +351,10 @@ class ArgumentParser(object):
         self.paren_level = 0
 
     def parse_token(self, token, s):
-        '''Parse token. Return None or replacement token type'''
+        """Parse token.
+
+        Return None or replacement token type
+        """
         if self.state == ParseState.idle:
             if token is self.t.Name.Function:
                 self.state = ParseState.found_function
@@ -347,8 +364,8 @@ class ArgumentParser(object):
                 self.state = ParseState.found_open_paren
                 self.paren_level = 1
         else:
-            if ((token is self.t.Name) or
-                    (token is self.t.Name.Builtin.Pseudo and s == 'self')):
+            if ((token is self.t.Name)
+                    or (token is self.t.Name.Builtin.Pseudo and s == 'self')):
                 return self.t.Token.Argument
             elif token is self.t.Punctuation and s == ')':
                 self.paren_level -= 1

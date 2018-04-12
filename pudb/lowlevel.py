@@ -25,11 +25,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-
 from pudb.py3compat import PY3
 
-
 # {{{ breakpoint validity
+
 
 def generate_executable_lines_for_code(code):
     lineno = code.co_firstlineno
@@ -48,7 +47,9 @@ def get_executable_lines_for_file(filename):
     # inspired by rpdb2
 
     from linecache import getlines
-    codes = [compile("".join(getlines(filename)), filename, "exec", dont_inherit=1)]
+    codes = [
+        compile(''.join(getlines(filename)), filename, 'exec', dont_inherit=1)
+    ]
 
     from types import CodeType
 
@@ -57,9 +58,9 @@ def get_executable_lines_for_file(filename):
     while codes:
         code = codes.pop()
         execable_lines |= set(generate_executable_lines_for_code(code))
-        codes.extend(const
-                for const in code.co_consts
-                if isinstance(const, CodeType))
+        codes.extend(
+            const for const in code.co_consts if isinstance(const, CodeType)
+        )
 
     return execable_lines
 
@@ -69,15 +70,15 @@ def get_breakpoint_invalid_reason(filename, lineno):
     import linecache
     line = linecache.getline(filename, lineno)
     if not line:
-        return "Line is beyond end of file."
+        return 'Line is beyond end of file.'
 
     try:
         executable_lines = get_executable_lines_for_file(filename)
     except SyntaxError:
-        return "File failed to compile."
+        return 'File failed to compile.'
 
     if lineno not in executable_lines:
-        return "No executable statement found in line."
+        return 'No executable statement found in line.'
 
 
 def lookup_module(filename):
@@ -109,24 +110,23 @@ def lookup_module(filename):
             return fullname
     return None
 
-# }}}
 
+# }}}
 
 # {{{ file encoding detection
 # the main idea stolen from Python 3.1's tokenize.py, by Ka-Ping Yee
 
 import re
-cookie_re = re.compile("^\s*#.*coding[:=]\s*([-\w.]+)")
+cookie_re = re.compile('^\s*#.*coding[:=]\s*([-\w.]+)')
 from codecs import lookup, BOM_UTF8
 if PY3:
     BOM_UTF8 = BOM_UTF8.decode()
 
 
 def detect_encoding(lines):
-    """
-    The detect_encoding() function is used to detect the encoding that should
-    be used to decode a Python source file. It requires one argment, lines,
-    iterable lines stream.
+    """The detect_encoding() function is used to detect the encoding that
+    should be used to decode a Python source file. It requires one argment,
+    lines, iterable lines stream.
 
     It will read a maximum of two lines, and return the encoding used
     (as a string) and a list of any lines (left as bytes) it has read
@@ -165,7 +165,7 @@ def detect_encoding(lines):
             codec = lookup(encoding)
         except LookupError:
             # This behaviour mimics the Python interpreter
-            raise SyntaxError("unknown encoding: " + encoding)
+            raise SyntaxError('unknown encoding: ' + encoding)
 
         if bom_found and codec.name != 'utf-8':
             # This behaviour mimics the Python interpreter
@@ -198,14 +198,16 @@ def decode_lines(lines):
     source_enc, _ = detect_encoding(lines)
 
     for line in lines:
-        if hasattr(line, "decode"):
+        if hasattr(line, 'decode'):
             yield line.decode(source_enc)
         else:
             yield line
+
+
 # }}}
 
-
 # {{{ traceback formatting
+
 
 class StringExceptionValueWrapper:
     def __init__(self, string_val):
@@ -231,10 +233,11 @@ def format_exception(exc_tuple):
             exc_tuple = exc_type, exc_value, exc_tb
 
         return format_exception(
-                *exc_tuple,
-                **dict(chain=hasattr(exc_value, "__context__")))
+            *exc_tuple, **dict(chain=hasattr(exc_value, '__context__'))
+        )
     else:
         return format_exception(*exc_tuple)
+
 
 # }}}
 

@@ -4,6 +4,7 @@ class MyClass(object):
         self.b = b
         self._b = [b]
 
+
 mc = MyClass(15, MyClass(12, None))
 
 
@@ -26,7 +27,7 @@ def simple_func(x):
     #import sys
     #sys.exit(1)
 
-    return 2*x
+    return 2 * x
 
 
 def fermat(n):
@@ -39,14 +40,15 @@ def fermat(n):
     # :)
 
     for x in range(100):
-        for y in range(1, x+1):
-            for z in range(1, x**n+y**n + 1):
+        for y in range(1, x + 1):
+            for z in range(1, x**n + y**n + 1):
                 if x**n + y**n == z**n:
                     yield x, y, z
 
-print("SF %s" % simple_func(10))
+
+print('SF %s' % simple_func(10))
 
 for i in fermat(2):
     print(i)
 
-print("FINISHED")
+print('FINISHED')

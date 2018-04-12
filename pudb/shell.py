@@ -25,7 +25,6 @@ except ImportError:
 else:
     HAVE_PTPYTHON = True
 
-
 try:
     import readline
     import rlcompleter
@@ -33,12 +32,11 @@ try:
 except ImportError:
     HAVE_READLINE = False
 
-
 # {{{ combined locals/globals dict
 
+
 class SetPropagatingDict(dict):
-    """
-    Combine dict into one, with assignments affecting a target dict
+    """Combine dict into one, with assignments affecting a target dict.
 
     The source dicts are combined so that early dicts in the list have higher
     precedence.
@@ -50,8 +48,8 @@ class SetPropagatingDict(dict):
     locals only actually works at the module level, when ``locals()`` is the
     same as ``globals()``, so propagation doesn't happen at all if the
     debugger is inside a function frame.
-
     """
+
     def __init__(self, source_dicts, target_dict):
         dict.__init__(self)
         for s in source_dicts[::-1]:
@@ -67,31 +65,28 @@ class SetPropagatingDict(dict):
         dict.__delitem__(self, key)
         del self.target_dict[key]
 
-# }}}
 
+# }}}
 
 custom_shell_dict = {}
 
 
 def run_classic_shell(globals, locals, first_time=[True]):
     if first_time:
-        banner = "Hit Ctrl-D to return to PuDB."
+        banner = 'Hit Ctrl-D to return to PuDB.'
         first_time.pop()
     else:
-        banner = ""
+        banner = ''
 
     ns = SetPropagatingDict([locals, globals], locals)
 
     from pudb.settings import get_save_config_path
     from os.path import join
-    hist_file = join(
-            get_save_config_path(),
-            "shell-history")
+    hist_file = join(get_save_config_path(), 'shell-history')
 
     if HAVE_READLINE:
-        readline.set_completer(
-                rlcompleter.Completer(ns).complete)
-        readline.parse_and_bind("tab: complete")
+        readline.set_completer(rlcompleter.Completer(ns).complete)
+        readline.parse_and_bind('tab: complete')
         readline.clear_history()
         try:
             readline.read_history_file(hist_file)
@@ -115,6 +110,7 @@ def run_bpython_shell(globals, locals):
 
 
 # {{{ ipython
+
 
 def have_ipython():
     # IPython has started being obnoxious on import, only import
@@ -146,12 +142,12 @@ def ipython_version():
 
 
 def run_ipython_shell_v10(globals, locals, first_time=[True]):
-    '''IPython shell from IPython version 0.10'''
+    """IPython shell from IPython version 0.10."""
     if first_time:
-        banner = "Hit Ctrl-D to return to PuDB."
+        banner = 'Hit Ctrl-D to return to PuDB.'
         first_time.pop()
     else:
-        banner = ""
+        banner = ''
 
     # avoid IPython's namespace litter
     ns = locals.copy()
@@ -162,15 +158,16 @@ def run_ipython_shell_v10(globals, locals, first_time=[True]):
 
 
 def _update_ipython_ns(shell, globals, locals):
-    '''Update the IPython 0.11 namespace at every visit'''
+    """Update the IPython 0.11 namespace at every visit."""
 
     shell.user_ns = locals.copy()
 
     try:
         shell.user_global_ns = globals
     except AttributeError:
+
         class DummyMod(object):
-            "A dummy module used for IPython's interactive namespace."
+            """A dummy module used for IPython's interactive namespace."""
             pass
 
         user_module = DummyMod()
@@ -182,12 +179,12 @@ def _update_ipython_ns(shell, globals, locals):
 
 
 def run_ipython_shell_v11(globals, locals, first_time=[True]):
-    '''IPython shell from IPython version 0.11'''
+    """IPython shell from IPython version 0.11."""
     if first_time:
-        banner = "Hit Ctrl-D to return to PuDB."
+        banner = 'Hit Ctrl-D to return to PuDB.'
         first_time.pop()
     else:
-        banner = ""
+        banner = ''
 
     try:
         # IPython 1.0 got rid of the frontend intermediary, and complains with
@@ -202,8 +199,7 @@ def run_ipython_shell_v11(globals, locals, first_time=[True]):
     # user (if it exists) that could contain the user's macros and other
     # niceities.
     config = load_default_config()
-    shell = TerminalInteractiveShell.instance(config=config,
-            banner2=banner)
+    shell = TerminalInteractiveShell.instance(config=config, banner2=banner)
     # XXX This avoids a warning about not having unique session/line numbers.
     # See the HistoryManager.writeout_cache method in IPython.core.history.
     shell.history_manager.new_session()
@@ -232,6 +228,7 @@ def run_ipython_shell(globals, locals):
     else:
         return run_ipython_shell_v11(globals, locals)
 
+
 # }}}
 
 
@@ -239,9 +236,12 @@ def run_ptpython_shell(globals, locals):
     # Use the default ptpython history
     import os
     history_filename = os.path.expanduser('~/.ptpython/history')
-    ptpython_embed(globals=globals.copy(), locals=locals.copy(),
-                   history_filename=history_filename,
-                   configure=run_config)
+    ptpython_embed(
+        globals=globals.copy(),
+        locals=locals.copy(),
+        history_filename=history_filename,
+        configure=run_config
+    )
 
 
 def run_ptipython_shell(globals, locals):
@@ -249,8 +249,12 @@ def run_ptipython_shell(globals, locals):
     import os
 
     history_filename = os.path.expanduser('~/.ptpython/history')
-    ptipython_embed(globals=globals.copy(), locals=locals.copy(),
-                   history_filename=history_filename,
-                   configure=run_config)
+    ptipython_embed(
+        globals=globals.copy(),
+        locals=locals.copy(),
+        history_filename=history_filename,
+        configure=run_config
+    )
+
 
 # vim: foldmethod=marker
